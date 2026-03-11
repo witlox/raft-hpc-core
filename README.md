@@ -1,5 +1,10 @@
 # raft-hpc-core
 
+[![CI](https://github.com/witlox/raft-hpc-core/actions/workflows/ci.yml/badge.svg)](https://github.com/witlox/raft-hpc-core/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/witlox/raft-hpc-core/graph/badge.svg)](https://codecov.io/gh/witlox/raft-hpc-core)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
+
 Shared Raft consensus infrastructure for HPC systems. This crate provides reusable components for building distributed applications using the [openraft](https://github.com/datafuselabs/openraft) library.
 
 This crate enables multiple applications (like Pact and Lattice) to share common Raft infrastructure while defining their own application-specific state and commands.
