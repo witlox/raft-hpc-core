@@ -91,3 +91,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: EmbarkStudios/cargo-deny-action@v2
+
+  publish:
+    name: Publish to crates.io
+    runs-on: ubuntu-latest
+    needs: [fmt, clippy, test, deny]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: arduino/setup-protoc@v3
+      - name: Check if version already published
+        id: check
+        run: |
+          VERSION=$(cargo metadata --no-deps --format-version=1 | jq -r '.packages[0].version')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          if cargo search raft-hpc-core --limit 1 | grep -q "raft-hpc-core = \"$VERSION\""; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "Version $VERSION already published, skipping"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "Version $VERSION not yet published"
+          fi
+      - name: Publish to crates.io
+        if: steps.check.outputs.skip == 'false'
+        run: cargo publish --token ${{ secrets.CRATES_IO_TOKEN }}
