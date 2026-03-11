@@ -155,10 +155,7 @@ where
 /// directory so the state machine will load it on next startup. The snapshot
 /// is written in `PersistedSnapshot { meta, state }` format that
 /// `load_latest_snapshot` expects.
-pub fn restore_backup<C, S, M>(
-    backup_path: &Path,
-    data_dir: &Path,
-) -> io::Result<BackupMetadata<M>>
+pub fn restore_backup<C, S, M>(backup_path: &Path, data_dir: &Path) -> io::Result<BackupMetadata<M>>
 where
     C: RaftTypeConfig,
     S: Serialize + DeserializeOwned,
@@ -257,7 +254,10 @@ mod tests {
     }
 
     impl crate::StateMachineState<TestTypeConfig> for TestState {
-        fn apply(&mut self, _cmd: crate::test_types::TestCommand) -> crate::test_types::TestResponse {
+        fn apply(
+            &mut self,
+            _cmd: crate::test_types::TestCommand,
+        ) -> crate::test_types::TestResponse {
             crate::test_types::TestResponse::Ok
         }
 
@@ -355,7 +355,9 @@ mod tests {
         let data_dir = dir.path().join("restored");
 
         export_backup(&state, &backup_path).await.unwrap();
-        let meta = restore_backup::<TestTypeConfig, TestState, TestMetadata>(&backup_path, &data_dir).unwrap();
+        let meta =
+            restore_backup::<TestTypeConfig, TestState, TestMetadata>(&backup_path, &data_dir)
+                .unwrap();
 
         assert_eq!(meta.app.item_count, 3);
 
@@ -435,7 +437,11 @@ mod tests {
         header.set_mode(0o644);
         header.set_cksum();
         tar_builder
-            .append_data(&mut header, "backup/metadata.json", metadata_json.as_slice())
+            .append_data(
+                &mut header,
+                "backup/metadata.json",
+                metadata_json.as_slice(),
+            )
             .unwrap();
 
         // unknown extra file
@@ -474,14 +480,12 @@ mod tests {
         let data_dir = dir.path().join("restored");
 
         export_backup(&state, &backup_path).await.unwrap();
-        restore_backup::<TestTypeConfig, TestState, TestMetadata>(&backup_path, &data_dir)
-            .unwrap();
+        restore_backup::<TestTypeConfig, TestState, TestMetadata>(&backup_path, &data_dir).unwrap();
 
         // The state machine should be able to load the restored snapshot
         let snap_dir = data_dir.join("raft").join("snapshots");
         let fresh_state = tokio::task::spawn_blocking(move || {
-            let fresh_state =
-                Arc::new(tokio::sync::RwLock::new(TestState { items: vec![] }));
+            let fresh_state = Arc::new(tokio::sync::RwLock::new(TestState { items: vec![] }));
             let _sm = HpcStateMachine::<TestTypeConfig, TestState>::with_snapshot_dir(
                 fresh_state.clone(),
                 snap_dir,
@@ -526,9 +530,11 @@ mod tests {
 
         let result = verify_backup::<TestState, TestMetadata>(&backup_path);
         assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .to_string()
-            .contains("missing metadata.json"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("missing metadata.json")
+        );
     }
 }

@@ -432,9 +432,9 @@ mod tests {
 
     #[tokio::test]
     async fn wal_entries_load_on_restart() {
+        use crate::test_types::{TestCommand, TestTypeConfig};
         use openraft::vote::leader_id_adv::CommittedLeaderId;
         use openraft::{Entry, EntryPayload, LogId};
-        use crate::test_types::{TestCommand, TestTypeConfig};
 
         let dir = tempfile::tempdir().unwrap();
         let wal_dir = dir.path().join("raft/wal");
@@ -444,10 +444,7 @@ mod tests {
         for i in 1..=3u64 {
             let entry = Entry::<TestTypeConfig> {
                 log_id: LogId::new(CommittedLeaderId::new(1, 1), i),
-                payload: EntryPayload::Normal(TestCommand::Set(
-                    format!("k{i}"),
-                    format!("v{i}"),
-                )),
+                payload: EntryPayload::Normal(TestCommand::Set(format!("k{i}"), format!("v{i}"))),
             };
             let data = serde_json::to_vec(&entry).unwrap();
             std::fs::write(wal_dir.join(format!("{i}.json")), &data).unwrap();
@@ -466,9 +463,9 @@ mod tests {
 
     #[tokio::test]
     async fn truncate_after_with_wal_entries() {
+        use crate::test_types::{TestCommand, TestTypeConfig};
         use openraft::vote::leader_id_adv::CommittedLeaderId;
         use openraft::{Entry, EntryPayload, LogId};
-        use crate::test_types::{TestCommand, TestTypeConfig};
 
         let dir = tempfile::tempdir().unwrap();
         let wal_dir = dir.path().join("raft/wal");
@@ -478,10 +475,7 @@ mod tests {
         for i in 1..=5u64 {
             let entry = Entry::<TestTypeConfig> {
                 log_id: LogId::new(CommittedLeaderId::new(1, 1), i),
-                payload: EntryPayload::Normal(TestCommand::Set(
-                    format!("k{i}"),
-                    format!("v{i}"),
-                )),
+                payload: EntryPayload::Normal(TestCommand::Set(format!("k{i}"), format!("v{i}"))),
             };
             let data = serde_json::to_vec(&entry).unwrap();
             std::fs::write(wal_dir.join(format!("{i}.json")), &data).unwrap();
@@ -504,9 +498,9 @@ mod tests {
 
     #[tokio::test]
     async fn purge_removes_wal_entries() {
+        use crate::test_types::{TestCommand, TestTypeConfig};
         use openraft::vote::leader_id_adv::CommittedLeaderId;
         use openraft::{Entry, EntryPayload, LogId};
-        use crate::test_types::{TestCommand, TestTypeConfig};
 
         let dir = tempfile::tempdir().unwrap();
         let wal_dir = dir.path().join("raft/wal");
@@ -515,10 +509,7 @@ mod tests {
         for i in 1..=5u64 {
             let entry = Entry::<TestTypeConfig> {
                 log_id: LogId::new(CommittedLeaderId::new(1, 1), i),
-                payload: EntryPayload::Normal(TestCommand::Set(
-                    format!("k{i}"),
-                    format!("v{i}"),
-                )),
+                payload: EntryPayload::Normal(TestCommand::Set(format!("k{i}"), format!("v{i}"))),
             };
             let data = serde_json::to_vec(&entry).unwrap();
             std::fs::write(wal_dir.join(format!("{i}.json")), &data).unwrap();
@@ -543,9 +534,9 @@ mod tests {
 
     #[tokio::test]
     async fn get_log_reader_reads_entries() {
+        use crate::test_types::TestCommand;
         use openraft::vote::leader_id_adv::CommittedLeaderId;
         use openraft::{Entry, EntryPayload, LogId};
-        use crate::test_types::TestCommand;
 
         let dir = tempfile::tempdir().unwrap();
         let wal_dir = dir.path().join("raft/wal");
@@ -555,11 +546,7 @@ mod tests {
             log_id: LogId::new(CommittedLeaderId::new(1, 1), 1),
             payload: EntryPayload::Normal(TestCommand::Set("a".into(), "b".into())),
         };
-        std::fs::write(
-            wal_dir.join("1.json"),
-            serde_json::to_vec(&entry).unwrap(),
-        )
-        .unwrap();
+        std::fs::write(wal_dir.join("1.json"), serde_json::to_vec(&entry).unwrap()).unwrap();
 
         let mut store = FileLogStore::<TestTypeConfig>::new(dir.path()).unwrap();
         let mut reader = store.get_log_reader().await;
@@ -594,7 +581,10 @@ mod tests {
 
     #[tokio::test]
     async fn wal_skips_non_json_and_invalid_files() {
+        use crate::test_types::TestCommand;
         use openraft::vote::leader_id_adv::CommittedLeaderId;
+        use openraft::{Entry, EntryPayload, LogId};
+
         let dir = tempfile::tempdir().unwrap();
         let wal_dir = dir.path().join("raft/wal");
         std::fs::create_dir_all(&wal_dir).unwrap();
@@ -605,19 +595,11 @@ mod tests {
         std::fs::write(wal_dir.join("abc.json"), b"not a number index").unwrap();
         // Corrupt JSON entry should be skipped
         std::fs::write(wal_dir.join("99.json"), b"not valid entry json").unwrap();
-
-        // Valid entry
-        use openraft::{Entry, EntryPayload, LogId};
-        use crate::test_types::TestCommand;
         let entry = Entry::<TestTypeConfig> {
             log_id: LogId::new(CommittedLeaderId::new(1, 1), 1),
             payload: EntryPayload::Normal(TestCommand::Set("a".into(), "b".into())),
         };
-        std::fs::write(
-            wal_dir.join("1.json"),
-            serde_json::to_vec(&entry).unwrap(),
-        )
-        .unwrap();
+        std::fs::write(wal_dir.join("1.json"), serde_json::to_vec(&entry).unwrap()).unwrap();
 
         let mut store = FileLogStore::<TestTypeConfig>::new(dir.path()).unwrap();
         let state = store.get_log_state().await.unwrap();
@@ -627,9 +609,9 @@ mod tests {
 
     #[tokio::test]
     async fn truncate_after_none_removes_all_entries() {
+        use crate::test_types::TestCommand;
         use openraft::vote::leader_id_adv::CommittedLeaderId;
         use openraft::{Entry, EntryPayload, LogId};
-        use crate::test_types::TestCommand;
 
         let dir = tempfile::tempdir().unwrap();
         let wal_dir = dir.path().join("raft/wal");
@@ -638,10 +620,7 @@ mod tests {
         for i in 1..=3u64 {
             let entry = Entry::<TestTypeConfig> {
                 log_id: LogId::new(CommittedLeaderId::new(1, 1), i),
-                payload: EntryPayload::Normal(TestCommand::Set(
-                    format!("k{i}"),
-                    format!("v{i}"),
-                )),
+                payload: EntryPayload::Normal(TestCommand::Set(format!("k{i}"), format!("v{i}"))),
             };
             std::fs::write(
                 wal_dir.join(format!("{i}.json")),

@@ -120,25 +120,20 @@ fn snapshot_filename<C: RaftTypeConfig>(meta: &SnapshotMeta<C>) -> String
 where
     LogId<C>: Serialize,
 {
-    let (term, index) = match &meta.last_log_id {
-        Some(log_id) => {
-            // Extract term from CommittedLeaderId via serde, since it's an opaque
-            // associated type for generic C. Supports both adv mode (object with
-            // "term" field) and std mode (bare integer).
-            let term = serde_json::to_value(&log_id.leader_id)
-                .ok()
-                .and_then(|v| match v {
-                    serde_json::Value::Number(n) => n.as_u64(),
-                    serde_json::Value::Object(m) => {
-                        m.get("term").and_then(|t| t.as_u64())
-                    }
-                    _ => None,
-                })
-                .unwrap_or(0);
-            (term, log_id.index)
-        }
-        None => (0, 0),
-    };
+    let (term, index) = meta.last_log_id.as_ref().map_or((0, 0), |log_id| {
+        // Extract term from CommittedLeaderId via serde, since it's an opaque
+        // associated type for generic C. Supports both adv mode (object with
+        // "term" field) and std mode (bare integer).
+        let term = serde_json::to_value(&log_id.leader_id)
+            .ok()
+            .and_then(|v| match v {
+                serde_json::Value::Number(n) => n.as_u64(),
+                serde_json::Value::Object(m) => m.get("term").and_then(serde_json::Value::as_u64),
+                _ => None,
+            })
+            .unwrap_or(0);
+        (term, log_id.index)
+    });
     format!("snap-{term}-{index}.json")
 }
 
@@ -463,7 +458,7 @@ mod tests {
         let mut sm = HpcStateMachine::<TestTypeConfig, TestState>::new(state.clone());
 
         let new_state = TestState {
-            data: [("k".into(), "v".into())].into_iter().collect(),
+            data: [("k".into(), "v".into())].into(),
         };
         let snapshot_data = serde_json::to_vec(&new_state).unwrap();
         let meta = SnapshotMeta {
@@ -497,7 +492,7 @@ mod tests {
         let mut sm = HpcStateMachine::<TestTypeConfig, TestState>::new(state);
 
         let new_state = TestState {
-            data: [("x".into(), "y".into())].into_iter().collect(),
+            data: [("x".into(), "y".into())].into(),
         };
         let snapshot_data = serde_json::to_vec(&new_state).unwrap();
         let meta = SnapshotMeta {
@@ -525,7 +520,7 @@ mod tests {
 
         // Install some state first
         let new_state = TestState {
-            data: [("a".into(), "b".into())].into_iter().collect(),
+            data: [("a".into(), "b".into())].into(),
         };
         let snapshot_data = serde_json::to_vec(&new_state).unwrap();
         let meta = SnapshotMeta {
@@ -570,7 +565,7 @@ mod tests {
         .unwrap();
 
         let new_state = TestState {
-            data: [("disk".into(), "test".into())].into_iter().collect(),
+            data: [("disk".into(), "test".into())].into(),
         };
         let snapshot_data = serde_json::to_vec(&new_state).unwrap();
         let meta = SnapshotMeta {
@@ -601,7 +596,7 @@ mod tests {
 
         // Install state so we have something to snapshot
         let new_state = TestState {
-            data: [("build".into(), "snap".into())].into_iter().collect(),
+            data: [("build".into(), "snap".into())].into(),
         };
         let snapshot_data = serde_json::to_vec(&new_state).unwrap();
         let meta = SnapshotMeta {
@@ -632,7 +627,7 @@ mod tests {
 
         // Install a snapshot
         let new_state = TestState {
-            data: [("load".into(), "test".into())].into_iter().collect(),
+            data: [("load".into(), "test".into())].into(),
         };
         let snapshot_data = serde_json::to_vec(&new_state).unwrap();
         let meta = SnapshotMeta {
@@ -677,7 +672,7 @@ mod tests {
         // Install many snapshots to trigger pruning
         for i in 1..=6u64 {
             let new_state = TestState {
-                data: [(format!("k{i}"), format!("v{i}"))].into_iter().collect(),
+                data: [(format!("k{i}"), format!("v{i}"))].into(),
             };
             let snapshot_data = serde_json::to_vec(&new_state).unwrap();
             let meta = SnapshotMeta {
@@ -693,10 +688,13 @@ mod tests {
         // Count snap-*.json files
         let snap_count = std::fs::read_dir(&snap_dir)
             .unwrap()
-            .filter_map(|e| e.ok())
+            .filter_map(Result::ok)
             .filter(|e| {
                 let name = e.file_name().to_string_lossy().to_string();
-                name.starts_with("snap-") && name.ends_with(".json")
+                name.starts_with("snap-")
+                    && std::path::Path::new(&name)
+                        .extension()
+                        .is_some_and(|ext| ext.eq_ignore_ascii_case("json"))
             })
             .count();
 
@@ -742,7 +740,7 @@ mod tests {
             )
             .unwrap();
             let new_state = TestState {
-                data: [("cold".into(), "start".into())].into_iter().collect(),
+                data: [("cold".into(), "start".into())].into(),
             };
             let snapshot_data = serde_json::to_vec(&new_state).unwrap();
             let meta = SnapshotMeta {

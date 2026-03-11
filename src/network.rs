@@ -190,8 +190,8 @@ mod tests {
 
     #[tokio::test]
     async fn mem_network_vote_missing_node() {
-        use openraft::network::v2::RaftNetworkV2;
         use openraft::network::RPCOption;
+        use openraft::network::v2::RaftNetworkV2;
 
         let factory = MemNetworkFactory::<TestTypeConfig>::new();
         let mut network = MemNetwork {
@@ -211,8 +211,8 @@ mod tests {
 
     #[tokio::test]
     async fn mem_network_append_entries_missing_node() {
-        use openraft::network::v2::RaftNetworkV2;
         use openraft::network::RPCOption;
+        use openraft::network::v2::RaftNetworkV2;
 
         let factory = MemNetworkFactory::<TestTypeConfig>::new();
         let mut network = MemNetwork {
@@ -234,8 +234,8 @@ mod tests {
 
     #[tokio::test]
     async fn mem_network_full_snapshot_missing_node() {
-        use openraft::network::v2::RaftNetworkV2;
         use openraft::network::RPCOption;
+        use openraft::network::v2::RaftNetworkV2;
         use openraft::storage::Snapshot;
 
         let factory = MemNetworkFactory::<TestTypeConfig>::new();

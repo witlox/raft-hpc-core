@@ -128,7 +128,9 @@ mod tests {
     async fn create_single_node_raft() -> openraft::Raft<TestTypeConfig> {
         use std::collections::BTreeMap;
         use std::sync::Arc;
-        let state = Arc::new(tokio::sync::RwLock::new(crate::test_types::TestState::default()));
+        let state = Arc::new(tokio::sync::RwLock::new(
+            crate::test_types::TestState::default(),
+        ));
         let config = Arc::new(
             openraft::Config {
                 heartbeat_interval: 200,

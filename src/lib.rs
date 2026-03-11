@@ -158,10 +158,7 @@ mod tests {
     use tokio::sync::RwLock;
 
     /// Create a single-node in-memory quorum for testing.
-    async fn create_test_quorum() -> (
-        openraft::Raft<TestTypeConfig>,
-        Arc<RwLock<TestState>>,
-    ) {
+    async fn create_test_quorum() -> (openraft::Raft<TestTypeConfig>, Arc<RwLock<TestState>>) {
         let state = Arc::new(RwLock::new(TestState::default()));
         let config = Arc::new(
             openraft::Config {
@@ -225,10 +222,9 @@ mod tests {
             let log_store = MemLogStore::new();
             let sm = HpcStateMachine::new(Arc::clone(&state));
 
-            let raft =
-                openraft::Raft::new(id, config, network_factory.clone(), log_store, sm)
-                    .await
-                    .unwrap();
+            let raft = openraft::Raft::new(id, config, network_factory.clone(), log_store, sm)
+                .await
+                .unwrap();
 
             network_factory.register(id, raft.clone()).await;
             nodes.push((raft, state));
@@ -256,9 +252,7 @@ mod tests {
         let mut listeners = Vec::new();
         let mut addresses = Vec::new();
         for _ in 0..node_count {
-            let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
-                .await
-                .unwrap();
+            let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
             let addr = listener.local_addr().unwrap();
             addresses.push(addr.to_string());
             listeners.push(listener);
@@ -292,19 +286,15 @@ mod tests {
             let log_store = MemLogStore::new();
             let sm = HpcStateMachine::new(Arc::clone(&state));
 
-            let raft =
-                openraft::Raft::new(id, config, network_factory.clone(), log_store, sm)
-                    .await
-                    .unwrap();
+            let raft = openraft::Raft::new(id, config, network_factory.clone(), log_store, sm)
+                .await
+                .unwrap();
 
             let server = RaftTransportServer::new(raft.clone());
             let handle = tokio::spawn(async move {
-                let incoming =
-                    tokio_stream::wrappers::TcpListenerStream::new(listener);
+                let incoming = tokio_stream::wrappers::TcpListenerStream::new(listener);
                 let _ = tonic::transport::Server::builder()
-                    .add_service(
-                        proto::raft_service_server::RaftServiceServer::new(server),
-                    )
+                    .add_service(proto::raft_service_server::RaftServiceServer::new(server))
                     .serve_with_incoming(incoming)
                     .await;
             });
@@ -370,13 +360,13 @@ mod tests {
     #[ignore = "slow: spins up 3-node gRPC Raft cluster"]
     async fn grpc_three_node_cluster_leader_election() {
         let (nodes, handles) = create_test_grpc_cluster(3).await;
-        let (leader, _state) = &nodes[0];
+        let (leader, state) = &nodes[0];
 
         // Write to prove the cluster is functional
         let cmd = TestCommand::Set("grpc-key".into(), "grpc-val".into());
         leader.client_write(cmd).await.unwrap();
 
-        let s = _state.read().await;
+        let s = state.read().await;
         assert_eq!(s.data.get("grpc-key").unwrap(), "grpc-val");
 
         for h in handles {

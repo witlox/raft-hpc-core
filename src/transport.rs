@@ -440,9 +440,21 @@ mod tests {
         let cert_path = dir.path().join("client.pem");
         let key_path = dir.path().join("client-key.pem");
 
-        std::fs::write(&ca_path, b"-----BEGIN CERTIFICATE-----\nca\n-----END CERTIFICATE-----\n").unwrap();
-        std::fs::write(&cert_path, b"-----BEGIN CERTIFICATE-----\ncert\n-----END CERTIFICATE-----\n").unwrap();
-        std::fs::write(&key_path, b"-----BEGIN PRIVATE KEY-----\nkey\n-----END PRIVATE KEY-----\n").unwrap();
+        std::fs::write(
+            &ca_path,
+            b"-----BEGIN CERTIFICATE-----\nca\n-----END CERTIFICATE-----\n",
+        )
+        .unwrap();
+        std::fs::write(
+            &cert_path,
+            b"-----BEGIN CERTIFICATE-----\ncert\n-----END CERTIFICATE-----\n",
+        )
+        .unwrap();
+        std::fs::write(
+            &key_path,
+            b"-----BEGIN PRIVATE KEY-----\nkey\n-----END PRIVATE KEY-----\n",
+        )
+        .unwrap();
 
         // With client identity
         let config = PeerTlsConfig::from_paths(
@@ -450,17 +462,13 @@ mod tests {
             Some(&cert_path),
             Some(&key_path),
             Some("test.local".to_string()),
-        ).unwrap();
+        )
+        .unwrap();
         assert!(config.client_identity.is_some());
         assert_eq!(config.domain_override.as_deref(), Some("test.local"));
 
         // Without client identity
-        let config2 = PeerTlsConfig::from_paths(
-            &ca_path,
-            None,
-            None,
-            None,
-        ).unwrap();
+        let config2 = PeerTlsConfig::from_paths(&ca_path, None, None, None).unwrap();
         assert!(config2.client_identity.is_none());
         assert!(config2.domain_override.is_none());
     }
@@ -483,7 +491,8 @@ mod tests {
 
         // When BasicNode has a non-empty address, it should be used
         let node = openraft::impls::BasicNode::new("192.168.1.1:9000");
-        let network = RaftNetworkFactory::<TestTypeConfig>::new_client(&mut factory, 1, &node).await;
+        let network =
+            RaftNetworkFactory::<TestTypeConfig>::new_client(&mut factory, 1, &node).await;
         assert_eq!(network.address, "192.168.1.1:9000");
         drop(network);
     }
@@ -495,7 +504,8 @@ mod tests {
 
         // When BasicNode has empty address, should fall back to registered
         let node = openraft::impls::BasicNode::new("");
-        let network = RaftNetworkFactory::<TestTypeConfig>::new_client(&mut factory, 1, &node).await;
+        let network =
+            RaftNetworkFactory::<TestTypeConfig>::new_client(&mut factory, 1, &node).await;
         assert_eq!(network.address, "10.0.0.1:5000");
         drop(network);
     }

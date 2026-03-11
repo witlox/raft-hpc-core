@@ -124,8 +124,7 @@ mod tests {
 
     #[tokio::test]
     async fn memory_variant_get_log_state() {
-        let mut store =
-            LogStoreVariant::<TestTypeConfig>::Memory(crate::store::MemLogStore::new());
+        let mut store = LogStoreVariant::<TestTypeConfig>::Memory(crate::store::MemLogStore::new());
         let state = store.get_log_state().await.unwrap();
         assert!(state.last_log_id.is_none());
         assert!(state.last_purged_log_id.is_none());
@@ -133,8 +132,7 @@ mod tests {
 
     #[tokio::test]
     async fn memory_variant_save_and_read_vote() {
-        let mut store =
-            LogStoreVariant::<TestTypeConfig>::Memory(crate::store::MemLogStore::new());
+        let mut store = LogStoreVariant::<TestTypeConfig>::Memory(crate::store::MemLogStore::new());
         let vote = openraft::vote::Vote::new(1, 1);
         store.save_vote(&vote).await.unwrap();
 
@@ -145,8 +143,7 @@ mod tests {
 
     #[tokio::test]
     async fn memory_variant_read_entries_empty() {
-        let mut store =
-            LogStoreVariant::<TestTypeConfig>::Memory(crate::store::MemLogStore::new());
+        let mut store = LogStoreVariant::<TestTypeConfig>::Memory(crate::store::MemLogStore::new());
         let mut reader = store.get_log_reader().await;
         let entries = reader.try_get_log_entries(0..10).await.unwrap();
         assert!(entries.is_empty());
@@ -154,8 +151,7 @@ mod tests {
 
     #[tokio::test]
     async fn memory_variant_save_and_read_committed() {
-        let mut store =
-            LogStoreVariant::<TestTypeConfig>::Memory(crate::store::MemLogStore::new());
+        let mut store = LogStoreVariant::<TestTypeConfig>::Memory(crate::store::MemLogStore::new());
         let log_id = LogId::new(CommittedLeaderId::new(1, 1), 42);
         store.save_committed(Some(log_id)).await.unwrap();
 
@@ -165,8 +161,7 @@ mod tests {
 
     #[tokio::test]
     async fn memory_variant_truncate_after_none() {
-        let mut store =
-            LogStoreVariant::<TestTypeConfig>::Memory(crate::store::MemLogStore::new());
+        let mut store = LogStoreVariant::<TestTypeConfig>::Memory(crate::store::MemLogStore::new());
         store.truncate_after(None).await.unwrap();
         let state = store.get_log_state().await.unwrap();
         assert!(state.last_log_id.is_none());
@@ -174,8 +169,7 @@ mod tests {
 
     #[tokio::test]
     async fn memory_variant_purge() {
-        let mut store =
-            LogStoreVariant::<TestTypeConfig>::Memory(crate::store::MemLogStore::new());
+        let mut store = LogStoreVariant::<TestTypeConfig>::Memory(crate::store::MemLogStore::new());
         let log_id = LogId::new(CommittedLeaderId::new(1, 1), 5);
         store.purge(log_id).await.unwrap();
         let state = store.get_log_state().await.unwrap();
