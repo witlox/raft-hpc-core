@@ -7,7 +7,7 @@
 
 Shared Raft consensus infrastructure for HPC systems. This crate provides reusable components for building distributed applications using the [openraft](https://github.com/datafuselabs/openraft) library.
 
-This crate enables multiple applications (like Pact and Lattice) to share common Raft infrastructure while defining their own application-specific state and commands.
+This crate enables multiple applications (like [Pact](https://github.com/witlox/pact) and [Lattice](https://github.com/witlox/lattice)) to share common Raft infrastructure while defining their own application-specific state and commands.
 
 ## Features
 
