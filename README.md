@@ -228,6 +228,3 @@ When using persistent storage:
     └── snap-0-100.json # Snapshot at index 100
 ```
 
-## License
-
-Apache-2.0
