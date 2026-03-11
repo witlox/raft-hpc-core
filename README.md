@@ -1,6 +1,7 @@
 # raft-hpc-core
 
 [![CI](https://github.com/witlox/raft-hpc-core/actions/workflows/ci.yml/badge.svg)](https://github.com/witlox/raft-hpc-core/actions/workflows/ci.yml)
+[![crates.io](https://img.shields.io/crates/v/raft-hpc-core.svg)](https://crates.io/crates/raft-hpc-core)
 [![codecov](https://codecov.io/gh/witlox/raft-hpc-core/graph/badge.svg)](https://codecov.io/gh/witlox/raft-hpc-core)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
@@ -20,6 +21,13 @@ This crate enables multiple applications (like [Pact](https://github.com/witlox/
 ## Installation
 
 Add to your `Cargo.toml`:
+
+```toml
+[dependencies]
+raft-hpc-core = "2026.1"
+```
+
+Or to use the latest development version from git:
 
 ```toml
 [dependencies]
