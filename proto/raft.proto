@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package raft_hpc.v1;
+
+// Internal Raft consensus transport between quorum members.
+// All request/response payloads are JSON-serialized openraft types
+// wrapped in bytes fields for simplicity and version flexibility.
+
+service RaftService {
+  // Append log entries to a follower.
+  rpc AppendEntries(RaftPayload) returns (RaftPayload);
+
+  // Request votes during leader election.
+  rpc Vote(RaftPayload) returns (RaftPayload);
+
+  // Install a full state snapshot on a follower.
+  rpc InstallSnapshot(SnapshotRequest) returns (RaftPayload);
+}
+
+// Generic wrapper for JSON-serialized openraft messages.
+message RaftPayload {
+  bytes data = 1;
+}
+
+// Snapshot install carries vote, metadata, and snapshot data separately
+// to avoid double-serialization of potentially large snapshot blobs.
+message SnapshotRequest {
+  // JSON-serialized Vote<TypeConfig>
+  bytes vote = 1;
+  // JSON-serialized SnapshotMeta<TypeConfig>
+  bytes meta = 2;
+  // Raw snapshot data (JSON-serialized application state)
+  bytes snapshot_data = 3;
+}

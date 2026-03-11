@@ -1,0 +1,40 @@
+[package]
+name = "raft-hpc-core"
+version = "2026.1.0"
+edition = "2024"
+license = "Apache-2.0"
+description = "Shared Raft consensus infrastructure for HPC systems"
+repository = "https://github.com/witlox/raft-hpc-core"
+rust-version = "1.85"
+
+[dependencies]
+openraft = { version = "=0.10.0-alpha.14", features = ["serde"] }
+tokio = { version = "1", features = ["full"] }
+tonic = { version = "0.12", features = ["tls"] }
+prost = "0.13"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tracing = "0.1"
+futures = "0.3"
+chrono = { version = "0.4", features = ["serde"] }
+flate2 = "1"
+tar = "0.4"
+tokio-stream = "0.1"
+
+[build-dependencies]
+tonic-build = "0.12"
+
+[dev-dependencies]
+tempfile = "3"
+tokio-test = "0.4"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+module_name_repetitions = "allow"
+must_use_candidate = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+
+[lints.rust]
+unsafe_code = "deny"
