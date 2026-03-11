@@ -34,17 +34,21 @@ fi
 echo "Setting version: $BASE_VERSION -> $RELEASE_VERSION"
 
 # 5. Patch all version locations
-# Workspace Cargo.toml (the source — under [workspace.package])
+# Cargo.toml (the source)
 sed -i.bak "s/^version = \"${BASE_VERSION}\"/version = \"${RELEASE_VERSION}\"/" \
     "$REPO_ROOT/Cargo.toml"
 
-# rm-replay (standalone workspace)
-sed -i.bak "s/^version = \"${BASE_VERSION}\"/version = \"${RELEASE_VERSION}\"/" \
-    "$REPO_ROOT/tools/rm-replay/Cargo.toml"
+# rm-replay (standalone workspace) - if exists
+if [ -f "$REPO_ROOT/tools/rm-replay/Cargo.toml" ]; then
+    sed -i.bak "s/^version = \"${BASE_VERSION}\"/version = \"${RELEASE_VERSION}\"/" \
+        "$REPO_ROOT/tools/rm-replay/Cargo.toml"
+fi
 
-# Python SDK
-sed -i.bak "s/^version = \"${BASE_VERSION}\"/version = \"${RELEASE_VERSION}\"/" \
-    "$REPO_ROOT/sdk/python/pyproject.toml"
+# Python SDK - if exists
+if [ -f "$REPO_ROOT/sdk/python/pyproject.toml" ]; then
+    sed -i.bak "s/^version = \"${BASE_VERSION}\"/version = \"${RELEASE_VERSION}\"/" \
+        "$REPO_ROOT/sdk/python/pyproject.toml"
+fi
 
 # Clean up sed backup files
 find "$REPO_ROOT" -name '*.bak' -delete
